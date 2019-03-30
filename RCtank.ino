@@ -89,6 +89,7 @@ void loop() {
       digitalWrite(11, HIGH);
       break;
   }
+
   byte dataTmp, firingTankCode, cannonballCode, checkSum;
   while (irrecv.decode(&results)) {
     if (results.decode_type == SONY) {
@@ -135,13 +136,11 @@ void loop() {
       tone(sound, 783);
       delay(750);
     }
-  }
-
-  else if (LIFE >= 1) {
+  } else if (LIFE >= 1) {
     UD = (pulseIn(A0, HIGH, 2000) + 10) * 8 / 1000;
     LR = (pulseIn(A1, HIGH, 2000) + 10) * 8 / 1000;
-    if (UD == 0) UD = (analogRead(A0) <= 100) ? 0 : 8;
-    if (LR == 0) LR = (analogRead(A1) <= 100) ? 0 : 8;
+    if (UD == 0) UD = (digitalRead(A0)) ? 8 : 0;
+    if (LR == 0) LR = (digitalRead(A1)) ? 8 : 0;
     digitalWrite(vibe, LOW);
 
     if ((UD == 4) && (4 < LR)) {  //中心,ブレーキ
@@ -152,19 +151,17 @@ void loop() {
     }
 
     else if ((UD > 4) && (LR == 4)) {  //上
-      Speed = abs(UD - 4) * 32 + 127;
       digitalWrite(5, LOW);
-      analogWrite(4, Speed);
+      digitalWrite(4, HIGH);
       digitalWrite(5, LOW);
-      analogWrite(2, Speed);
+      digitalWrite(2, HIGH);
     }
 
     else if ((UD < 4) && (LR == 4)) {  //下
-      Speed = abs(UD - 4) * 32 + 127;
-      analogWrite(5, Speed);
-      digitalWrite(5, LOW);
-      analogWrite(3, Speed);
-      digitalWrite(5, LOW);
+      digitalWrite(5, HIGH);
+      digitalWrite(4, LOW);
+      digitalWrite(3, HIGH);
+      digitalWrite(2, LOW);
     }
 
     else if ((UD == 4) && (4 < LR)) {  //右
@@ -182,39 +179,35 @@ void loop() {
     }
 
     else if ((4 < UD) && (4 < LR)) {  //第一象限
-      Speed = 255 - abs(LR - 4) * 40;
       digitalWrite(5, LOW);
       digitalWrite(4, HIGH);
       digitalWrite(3, LOW);
-      analogWrite(2, Speed);
+      digitalWrite(2, LOW);
     }
 
     else if ((4 < UD) && (LR < 4)) {  //第二象限
-      Speed = 255 - abs(LR - 4) * 40;
       digitalWrite(5, LOW);
-      analogWrite(6, Speed);
+      dititalWrite(4, LOW);
       digitalWrite(3, LOW);
       digitalWrite(2, HIGH);
     }
 
     else if ((UD < 4) && (LR < 4)) {  //第三象限
-      Speed = 255 - abs(LR - 4) * 40;
-      analogWrite(5, Speed);
+      digitalWrite(5, LOW);
       digitalWrite(4, LOW);
       digitalWrite(3, HIGH);
       digitalWrite(2, LOW);
     }
 
     else if ((UD < 4) && (4 < LR)) {  //第四象限
-      Speed = 255 - abs(LR - 4) * 40;
       digitalWrite(5, HIGH);
       digitalWrite(4, LOW);
-      analogWrite(9, Speed);
+      digitalWrite(3, LOW);
       digitalWrite(2, LOW);
     }
 
     if (shot == 0) {
-      tone(9, 38000, 500);  //赤外線出力
+            tone(9, 38000, 500);  //赤外線出力
       digitalWrite(13, HIGH);
       digitalWrite(12, HIGH);
       digitalWrite(11, HIGH);
