@@ -61,9 +61,6 @@ void loop() {
   Serial.print("LIFE= ");
   Serial.print(LIFE);
   Serial.print(":");
-  Serial.print("shot= ");
-  Serial.print(shot);
-  Serial.print(":");
   Serial.print("UD= ");
   Serial.print(UD);
   Serial.print(":");
@@ -98,6 +95,7 @@ void loop() {
         dataTmp = results.value;
         // firingTankCode = (dataTmp & 0b11100000)>>5;
         // cannonballCode = (dataTmp & 0b00011111);
+        Serial.print("HitCode= ");
         Serial.println(dataTmp);
 
         LIFE--;
@@ -188,7 +186,7 @@ void loop() {
 
     else if ((4 < UD) && (LR < 4)) {  //第二象限
       digitalWrite(5, LOW);
-      dititalWrite(4, LOW);
+      digitalWrite(4, LOW);
       digitalWrite(3, LOW);
       digitalWrite(2, HIGH);
     }
