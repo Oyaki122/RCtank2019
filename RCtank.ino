@@ -7,6 +7,7 @@
 IRrecv irrecv(RECV_PIN);
 IRsend irsend;
 decode_results results;
+byte SelectedCannonball = 0;
 
 byte vibe = 6;
 byte sound = 10;
@@ -207,7 +208,13 @@ void loop() {
     }
 
     if (shot == 0) {
-            tone(9, 38000, 500);  //赤外線出力
+      byte irData = (TankNum << 5) | SelectedCannonball;
+      for (byte i = 0; i < 3; i++) {
+        irsend.sendSony(irData, 8);
+        delay(40);
+      }
+      irrecv.enableIRIn();
+
       digitalWrite(13, HIGH);
       digitalWrite(12, HIGH);
       digitalWrite(11, HIGH);
