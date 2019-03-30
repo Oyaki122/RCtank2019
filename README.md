@@ -6,7 +6,8 @@ MIT License
 Author-Kohei Wada  
 oc.yaki122@gmail.com
 
-##注意
+## 注意
+
 IRRemote と tone が Timer 関係で干渉するため、IRRemote ライブラリの "boarddefs.h" 151 行目
 
 ```c++:boarddefs.h
