@@ -7,7 +7,6 @@
 IRrecv irrecv(RECV_PIN);
 IRsend irsend;
 decode_results results;
-byte SelectedCannonball = 0;
 
 byte vibe = 6;
 byte sound = 10;
@@ -49,7 +48,6 @@ void setup() {
 void loop() {
   noTone(sound);  //初期設定
   IR = digitalRead(8);
-  old_IR = IR;
   shot = digitalRead(7);
 
   Serial.print("IR= ");
@@ -89,7 +87,7 @@ void loop() {
   }
 
   byte dataTmp, firingTankCode, cannonballCode, checkSum;
-  while (irrecv.decode(&results)) {
+  if (irrecv.decode(&results)) {
     if (results.decode_type == SONY) {
       if (results.bits == 8) {
         dataTmp = results.value;
@@ -135,119 +133,119 @@ void loop() {
       tone(sound, 783);
       delay(750);
     }
-  } else if (LIFE >= 1) {
-    UD = (pulseIn(A0, HIGH, 2000) + 10) * 8 / 1000;
-    LR = (pulseIn(A1, HIGH, 2000) + 10) * 8 / 1000;
-    if (UD == 0) UD = (digitalRead(A0)) ? 8 : 0;
-    if (LR == 0) LR = (digitalRead(A1)) ? 8 : 0;
-    digitalWrite(vibe, LOW);
+  }
 
-    if ((UD == 4) && (4 < LR)) {  //中心,ブレーキ
-      digitalWrite(5, HIGH);
-      digitalWrite(4, HIGH);
-      digitalWrite(3, HIGH);
-      digitalWrite(2, HIGH);
+  UD = (pulseIn(A0, HIGH, 2000) + 10) * 8 / 1000;
+  LR = (pulseIn(A1, HIGH, 2000) + 10) * 8 / 1000;
+  if (UD == 0) UD = (digitalRead(A0)) ? 8 : 0;
+  if (LR == 0) LR = (digitalRead(A1)) ? 8 : 0;
+  digitalWrite(vibe, LOW);
+
+  if ((UD == 4) && (4 < LR)) {  //中心,ブレーキ
+    digitalWrite(5, HIGH);
+    digitalWrite(4, HIGH);
+    digitalWrite(3, HIGH);
+    digitalWrite(2, HIGH);
+  }
+
+  else if ((UD > 4) && (LR == 4)) {  //上
+    digitalWrite(5, LOW);
+    digitalWrite(4, HIGH);
+    digitalWrite(5, LOW);
+    digitalWrite(2, HIGH);
+  }
+
+  else if ((UD < 4) && (LR == 4)) {  //下
+    digitalWrite(5, HIGH);
+    digitalWrite(4, LOW);
+    digitalWrite(3, HIGH);
+    digitalWrite(2, LOW);
+  }
+
+  else if ((UD == 4) && (4 < LR)) {  //右
+    digitalWrite(5, LOW);
+    digitalWrite(4, HIGH);
+    digitalWrite(3, HIGH);
+    digitalWrite(2, LOW);
+  }
+
+  else if ((UD == 4) && (4 > LR)) {  //左
+    digitalWrite(5, HIGH);
+    digitalWrite(4, LOW);
+    digitalWrite(3, LOW);
+    digitalWrite(2, HIGH);
+  }
+
+  else if ((4 < UD) && (4 < LR)) {  //第一象限
+    digitalWrite(5, LOW);
+    digitalWrite(4, HIGH);
+    digitalWrite(3, LOW);
+    digitalWrite(2, LOW);
+  }
+
+  else if ((4 < UD) && (LR < 4)) {  //第二象限
+    digitalWrite(5, LOW);
+    digitalWrite(4, LOW);
+    digitalWrite(3, LOW);
+    digitalWrite(2, HIGH);
+  }
+
+  else if ((UD < 4) && (LR < 4)) {  //第三象限
+    digitalWrite(5, LOW);
+    digitalWrite(4, LOW);
+    digitalWrite(3, HIGH);
+    digitalWrite(2, LOW);
+  }
+
+  else if ((UD < 4) && (4 < LR)) {  //第四象限
+    digitalWrite(5, HIGH);
+    digitalWrite(4, LOW);
+    digitalWrite(3, LOW);
+    digitalWrite(2, LOW);
+  }
+
+  if (shot == 0) {
+    byte irData = TankNum;
+    for (byte i = 0; i < 3; i++) {
+      irsend.sendSony(irData, 3);
+      delay(40);
     }
+    irrecv.enableIRIn();
 
-    else if ((UD > 4) && (LR == 4)) {  //上
-      digitalWrite(5, LOW);
-      digitalWrite(4, HIGH);
-      digitalWrite(5, LOW);
-      digitalWrite(2, HIGH);
-    }
+    digitalWrite(13, HIGH);
+    digitalWrite(12, HIGH);
+    digitalWrite(11, HIGH);
 
-    else if ((UD < 4) && (LR == 4)) {  //下
-      digitalWrite(5, HIGH);
-      digitalWrite(4, LOW);
-      digitalWrite(3, HIGH);
-      digitalWrite(2, LOW);
-    }
+    digitalWrite(5, LOW);  //ノックバック
+    digitalWrite(4, LOW);  //ノックバック
+    digitalWrite(3, LOW);  //ノックバック
+    digitalWrite(2, LOW);  //ノックバック
+    delay(150);
 
-    else if ((UD == 4) && (4 < LR)) {  //右
-      digitalWrite(5, LOW);
-      digitalWrite(4, HIGH);
-      digitalWrite(3, HIGH);
-      digitalWrite(2, LOW);
-    }
+    digitalWrite(5, HIGH);  //ノックバック
+    digitalWrite(4, HIGH);  //ノックバック
+    digitalWrite(3, HIGH);  //ノックバック
+    digitalWrite(2, HIGH);  //ノックバック
+    delay(650);
 
-    else if ((UD == 4) && (4 > LR)) {  //左
-      digitalWrite(5, HIGH);
-      digitalWrite(4, LOW);
-      digitalWrite(3, LOW);
-      digitalWrite(2, HIGH);
-    }
+    digitalWrite(vibe, HIGH);  //バイブ 1q
+    digitalWrite(11, LOW);     //ライフLED１
+    tone(sound, 1200, 700);    //音１
+    delay(700);
+    digitalWrite(vibe, LOW);  //バイブ
+    delay(100);
 
-    else if ((4 < UD) && (4 < LR)) {  //第一象限
-      digitalWrite(5, LOW);
-      digitalWrite(4, HIGH);
-      digitalWrite(3, LOW);
-      digitalWrite(2, LOW);
-    }
+    digitalWrite(vibe, HIGH);  //バイブ
+    digitalWrite(12, LOW);     //ライフLED２
+    tone(sound, 1200, 700);    //音２
+    delay(700);
+    digitalWrite(vibe, LOW);  //バイブ
+    delay(100);
 
-    else if ((4 < UD) && (LR < 4)) {  //第二象限
-      digitalWrite(5, LOW);
-      digitalWrite(4, LOW);
-      digitalWrite(3, LOW);
-      digitalWrite(2, HIGH);
-    }
-
-    else if ((UD < 4) && (LR < 4)) {  //第三象限
-      digitalWrite(5, LOW);
-      digitalWrite(4, LOW);
-      digitalWrite(3, HIGH);
-      digitalWrite(2, LOW);
-    }
-
-    else if ((UD < 4) && (4 < LR)) {  //第四象限
-      digitalWrite(5, HIGH);
-      digitalWrite(4, LOW);
-      digitalWrite(3, LOW);
-      digitalWrite(2, LOW);
-    }
-
-    if (shot == 0) {
-      byte irData = (TankNum << 5) | SelectedCannonball;
-      for (byte i = 0; i < 3; i++) {
-        irsend.sendSony(irData, 8);
-        delay(40);
-      }
-      irrecv.enableIRIn();
-
-      digitalWrite(13, HIGH);
-      digitalWrite(12, HIGH);
-      digitalWrite(11, HIGH);
-
-      digitalWrite(5, LOW);  //ノックバック
-      digitalWrite(4, LOW);  //ノックバック
-      digitalWrite(3, LOW);  //ノックバック
-      digitalWrite(2, LOW);  //ノックバック
-      delay(150);
-
-      digitalWrite(5, HIGH);  //ノックバック
-      digitalWrite(4, HIGH);  //ノックバック
-      digitalWrite(3, HIGH);  //ノックバック
-      digitalWrite(2, HIGH);  //ノックバック
-      delay(650);
-
-      digitalWrite(vibe, HIGH);  //バイブ 1q
-      digitalWrite(11, LOW);     //ライフLED１
-      tone(sound, 1200, 700);    //音１
-      delay(700);
-      digitalWrite(vibe, LOW);  //バイブ
-      delay(100);
-
-      digitalWrite(vibe, HIGH);  //バイブ
-      digitalWrite(12, LOW);     //ライフLED２
-      tone(sound, 1200, 700);    //音２
-      delay(700);
-      digitalWrite(vibe, LOW);  //バイブ
-      delay(100);
-
-      digitalWrite(vibe, HIGH);  //バイブ
-      digitalWrite(13, LOW);     //ライフLED３
-      tone(sound, 1800, 600);    //音３
-      delay(700);
-      digitalWrite(vibe, LOW);  //バイブ
-    }
+    digitalWrite(vibe, HIGH);  //バイブ
+    digitalWrite(13, LOW);     //ライフLED３
+    tone(sound, 1800, 600);    //音３
+    delay(700);
+    digitalWrite(vibe, LOW);  //バイブ
   }
 }
